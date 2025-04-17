@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Declare which site to scrape
-webpage_response = requests.get("https://content.codecademy.com/courses/beautifulsoup/cacao/index.html")
+webpage_response = requests.get("./Project Datasets/Cacao Dataset/index.html")
 webpage = webpage_response.content
 
 # Set up BS with the webpage

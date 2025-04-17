@@ -15,77 +15,38 @@ soup = BeautifulSoup(webpage, "html.parser")
 # Find and set the target data in the dataset to a variable in the code (i.e., Chocolate rating)
 chocolate_ratings = soup.find_all(attrs={"Rating"})
 
-# Create an empty list to store the parsed rating data
-ratings = []
-
-# Loop through the ratings in the target data to parse them individually
-for rating in chocolate_ratings:
-    
-    # Skip the header
-    if "Rating" in rating.get_text():  
-        continue  # Skip the rest of this loop iteration
-        
-    # Append each rating to the ratings empty list
-    ratings.append(float(rating.get_text()))
-    
-# After finishing appending, print the resulting list.
-# print(ratings)
-
-# Create a Histogram of the Chocolate Ratings
-# plt.hist(ratings)
-
-# Show the historgram
-# plt.show()
-
-# Example Element: <td class="Company">Silvio Bessone</td>
-
 # Find and set the target data in the dataset to a variable in the code (i.e., Chocolate rating, company)
 company_names = soup.find_all(attrs={"Company"})
-
-# Create an empty target list to store the parsed target data
-companies = []
-
-# Loop through the individual items in the target data to parse them
-for company in company_names:
-    
-    # Skip the header
-    if "Company" in company.get_text():  
-        continue  # Skip the rest of this loop iteration
-        
-    # Append each parsed item to the target empty list
-    companies.append(company.get_text())
-    
-# After finishing appending, print the resulting list.
-# print(companies)
 
 # Example Element: <td class="CocoaPercent">Cocoa Percent</td>
 # Find and set the target data in the dataset to a variable in the code (i.e., Chocolate rating, company)
 cocoa_percents = soup.find_all(attrs={"CocoaPercent"})
 
-# Create an empty target list to store the parsed target data
-percentages = []
+def extract_data(elements, header_text, cleaning_func=lambda x: x.strip()):
+    data = []
+    for element in elements:
+        text = element.get_text()
+        if header_text in text:
+            continue
+        data.append(cleaning_func(text))
+    return data
 
-# Loop through the individual items in the target data to parse them
-for percent in cocoa_percents:
-    
-    # Skip the header
-    if "Cocoa\n               Percent\n            " in percent.get_text():  
-        continue  # Skip the rest of this loop iteration
-        
-    # Append each parsed item to the target empty list
-    cleaned_percent = percent.get_text().replace("%", " ").strip() # Remove the percentage symbol by replacing it with strippable whitespace
-    percentages.append(float(cleaned_percent))
-    
-# After finishing appending, print the resulting list.
-# print(percentages)
+# Example usage:
+# Extract ratings (without needing extra cleaning function)
+ratings = [float(value) for value in extract_data(chocolate_ratings, "Rating")]
 
+# Extract company names
+companies = extract_data(company_names, "Company")
+
+# Extract cocoa percentages with custom cleaning to remove "%"
+cleaning = lambda text: float(text.replace("%", "").strip())
+percentages = [cleaning(text) for text in extract_data(cocoa_percents, "Cocoa\n               Percent\n            ", lambda x: x)]
 
 # Set up columns for a dataframe by stating the column title and then the corresponding data list
 d = {"Company": companies, "Rating": ratings, "Percentage": percentages}
 
 # Construct the dataframe and assign it to a variable
 chocolate_df = pd.DataFrame.from_dict(d)
-
 
 print(chocolate_df)
 
@@ -103,7 +64,6 @@ print(ten_worst)
 # Plot the Cocoa Percentages on the X-axis and Ratings on the Y-axis
 plt.scatter(chocolate_df.Percentage, chocolate_df.Rating)
 plt.show()
-
 
 z = np.polyfit(chocolate_df.Percentage, chocolate_df.Rating, 1)
 line_function = np.poly1d(z)
@@ -154,7 +114,6 @@ print(ten_best)
 print("-----------------")
 ten_worst = mean_ratings.nsmallest(10)
 print(ten_worst)
-
 
 # Let's group the dataframe by the country names
 # And then use the cocoa percentage column name to take the mean cocoa percentage for the # of rows for each country
